@@ -14,6 +14,8 @@ import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+    private final int MIN_ORDERS = 1;
+    private final int MAX_ORDERS = 100;
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -27,10 +29,12 @@ public class OrderServiceImpl implements OrderService {
          * TODO: EJERCICIO 2.a) Recupera un listado de los ultimos N pedidos (recuerda ordenar por fecha)
          */
 
+        if(MIN_ORDERS < limit || limit > MAX_ORDERS)
+            limit = 30;
         Map<String, Object> params = new HashMap<>();
         params.put("limit", limit);
 
-        String sql = "";
+        String sql = "SELECT * FROM ORDERS ORDER BY (date) DESC LIMIT :limit";
 
         return jdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Order.class));
     }
@@ -62,6 +66,12 @@ public class OrderServiceImpl implements OrderService {
         // Escribe la query para recuperar la entidad OrderDetail por ID
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", orderId);
+        /*String sqlOrderDetail = "SELECT (p.PRICE * oi.QUANTITY) FROM ORDERS o " +
+                "INNER JOIN ORDER_ITEMS oi ON oi.ORDER_ID = o.ID " +
+                "INNER JOIN PRODUCTS p ON oi.PRODUCT_ID = p.ID " +
+                "WHERE o.ID = :orderId";*/
+        String sqlOrderDetail = "";
+        //OrderDetail orderDetail = jdbcTemplate.query(sqlOrderDetail, params, new BeanPropertyRowMapper<>(OrderDetail.class));
         OrderDetail orderDetail = null;
 
         // Una vez has conseguido recuperar los detalles del pedido, faltaria recuperar los productos que forman parte de el...

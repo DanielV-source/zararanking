@@ -6,10 +6,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.PreparedStatement;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -38,11 +36,26 @@ public class ProductServiceImpl implements ProductService {
          *  Pista: A la hora de filtrar, pasar los valores a mayúsculas o minúsculas. Ejemplo: Uso de la función SQL upper().
          */
 
+        String sql = "SELECT * FROM Products";
+        StringBuilder sb = new StringBuilder(sql);
         Map<String, Object> params = new HashMap<>();
+        if(categories.isPresent()) {
 
-        String sql = "";
+            List<String> lCategories = categories.get();
 
-        return jdbcTemplate.query(sql, params, new BeanPropertyRowMapper<>(Product.class));
+            sb.append(" WHERE");
+
+
+            for (int i = 0; i < lCategories.size(); i++) {
+                String category = lCategories.get(i);
+                sb.append(" LOWER(CATEGORY) = :cat" + i + "");
+                params.put("cat" + i, category.toLowerCase());
+                if (i < lCategories.size() - 1)
+                    sb.append(" OR");
+            }
+        }
+
+        return jdbcTemplate.query(sb.toString(), params, new BeanPropertyRowMapper<>(Product.class));
     }
 
     @Override
@@ -51,7 +64,9 @@ public class ProductServiceImpl implements ProductService {
          * TODO: EJERCICIO 1.b) Recupera las distintas categorias de los productos disponibles.
          */
 
-        String sql = "";
+        String sql = "SELECT DISTINCT CATEGORY FROM Products";
+
+
 
         return jdbcTemplate.queryForList(sql, (SqlParameterSource) null, String.class);
     }
